@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plataforma Estratégica — Thayne Oliveira</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080b14;
+    --bg-grid: rgba(56,189,248,0.04);
+    --surface: #0f1525;
+    --surface-2: #141b30;
+    --surface-3: #1a2238;
+    --border: rgba(120,150,200,0.14);
+    --border-bright: rgba(56,189,248,0.35);
+    --cyan: #38bdf8;
+    --cyan-dim: #1a6a94;
+    --teal: #2dd4bf;
+    --text: #e4ebf7;
+    --text-dim: #8696b5;
+    --text-faint: #5a6783;
+    --st-todo: #64748b;
+    --st-progress: #38bdf8;
+    --st-suspended: #fbbf24;
+    --st-cancelled: #f4685f;
+    --st-done: #34d399;
+    --glow: 0 0 24px rgba(56,189,248,0.18);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    background-image:
+      linear-gradient(var(--bg-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
+    background-size: 44px 44px;
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+  header {
+    background: rgba(8,11,20,0.85);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    padding: 22px 0 0; position: sticky; top: 0; z-index: 100;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .logo-mark {
+    width: 38px; height: 38px; border-radius: 9px;
+    background: linear-gradient(135deg, var(--cyan), var(--teal));
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--glow); flex-shrink: 0;
+  }
+  .logo-mark svg { width: 20px; height: 20px; color: #051018; }
+  .brand h1 {
+    font-family: 'Chakra Petch', sans-serif; font-weight: 600; font-size: 22px;
+    letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  .brand h1 span { color: var(--cyan); }
+  .brand .sub { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-faint); letter-spacing: 0.5px; margin-left: auto; }
+  nav { display: flex; gap: 2px; margin-top: 20px; flex-wrap: wrap; }
+  nav button {
+    background: none; border: none; color: var(--text-dim);
+    font-family: 'Chakra Petch', sans-serif; font-size: 13px; font-weight: 500;
+    letter-spacing: 0.5px; text-transform: uppercase;
+    padding: 12px 18px; cursor: pointer; position: relative;
+    transition: color 0.18s; display: flex; align-items: center; gap: 8px;
+  }
+  nav button::after { content: ''; position: absolute; bottom: 0; left: 12px; right: 12px; height: 2px; background: var(--cyan); transform: scaleX(0); transition: transform 0.22s; box-shadow: var(--glow); }
+  nav button:hover { color: var(--text); }
+  nav button.active { color: var(--cyan); }
+  nav button.active::after { transform: scaleX(1); }
+  nav button svg { width: 15px; height: 15px; }
+
+  main { padding: 36px 0 90px; }
+  .view { display: none; animation: fade 0.4s ease; }
+  .view.active { display: block; }
+  @keyframes fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .view-head { margin-bottom: 28px; }
+  .view-head h2 {
+    font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 30px;
+    letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .view-head h2 .accent { color: var(--cyan); }
+  .view-head p { color: var(--text-dim); font-size: 14.5px; max-width: 660px; }
+
+  .panel {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    position: relative; overflow: hidden;
+  }
+  .panel::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--border-bright), transparent); }
+
+  /* STAT GRID */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-bottom: 18px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 13px; padding: 20px; position: relative; overflow: hidden; transition: border-color 0.2s; }
+  .stat:hover { border-color: var(--border-bright); }
+  .stat .label { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-faint); }
+  .stat .value { font-family: 'Chakra Petch', sans-serif; font-size: 36px; font-weight: 700; line-height: 1.1; margin-top: 8px; font-variant-numeric: tabular-nums; }
+  .stat .value small { font-size: 18px; color: var(--text-faint); }
+  .stat .meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); margin-top: 6px; }
+  .stat .ico { position: absolute; top: 18px; right: 18px; opacity: 0.25; }
+  .stat .ico svg { width: 26px; height: 26px; }
+  .stat.cyan .value { color: var(--cyan); } .stat.cyan .ico { color: var(--cyan); }
+  .stat.green .value { color: var(--st-done); } .stat.green .ico { color: var(--st-done); }
+  .stat.amber .value { color: var(--st-suspended); } .stat.amber .ico { color: var(--st-suspended); }
+
+  /* STATUS BREAKDOWN */
+  .status-board { padding: 24px; margin-bottom: 18px; }
+  .status-board h3, .progress-board h3 { font-family: 'Chakra Petch', sans-serif; font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+  .status-board h3 svg, .progress-board h3 svg { width: 16px; height: 16px; color: var(--cyan); }
+  .status-cells { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr)); gap: 12px; }
+  .scell { background: var(--surface-2); border: 1px solid var(--border); border-radius: 11px; padding: 16px; text-align: center; position: relative; }
+  .scell .num { font-family: 'Chakra Petch', sans-serif; font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .scell .nm { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-dim); margin-top: 4px; }
+  .scell .ledge { position: absolute; top: 0; left: 14px; right: 14px; height: 2px; border-radius: 2px; }
+  .stacked-bar { height: 12px; border-radius: 6px; overflow: hidden; display: flex; margin-top: 20px; background: var(--surface-2); }
+  .stacked-bar span { height: 100%; transition: width 0.6s cubic-bezier(0.16,1,0.3,1); }
+
+  /* PROGRESS BOARD */
+  .progress-board { padding: 24px; }
+  .sector-prog { margin-bottom: 16px; }
+  .sector-prog:last-child { margin-bottom: 0; }
+  .sector-prog .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
+  .sector-prog .name { font-size: 13.5px; font-weight: 500; display: flex; align-items: center; gap: 9px; }
+  .sector-prog .dot { width: 9px; height: 9px; border-radius: 2px; box-shadow: 0 0 8px currentColor; }
+  .sector-prog .pct { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; color: var(--text-dim); }
+  .bar { height: 7px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+  .bar .fill { height: 100%; border-radius: 4px; transition: width 0.6s cubic-bezier(0.16,1,0.3,1); }
+
+  /* SECTORS */
+  .sector { background: var(--surface); border: 1px solid var(--border); border-radius: 13px; margin-bottom: 14px; overflow: hidden; transition: border-color 0.2s; }
+  .sector:hover { border-color: var(--border-bright); }
+  .sector-header { padding: 18px 22px; cursor: pointer; display: flex; align-items: center; gap: 14px; user-select: none; }
+  .sector-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid; }
+  .sector-icon svg { width: 20px; height: 20px; }
+  .sector-title { flex: 1; }
+  .sector-title .t { font-family: 'Chakra Petch', sans-serif; font-weight: 600; font-size: 16px; letter-spacing: 0.3px; }
+  .sector-title .d { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-faint); }
+  .sector-count { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; color: var(--text-dim); padding: 4px 10px; background: var(--surface-2); border-radius: 7px; }
+  .sector-chevron { transition: transform 0.25s; color: var(--text-faint); }
+  .sector.open .sector-chevron { transform: rotate(180deg); }
+  .sector-body { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
+  .sector.open .sector-body { max-height: 4000px; }
+  .sector-body-inner { padding: 0 22px 18px; }
+
+  .task { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--border); }
+  .task .txt { flex: 1; font-size: 14px; transition: all 0.2s; }
+  .task .txt.cancelled { text-decoration: line-through; color: var(--text-faint); }
+  .task .txt.done { color: var(--text-dim); }
+  .task .when { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--cyan); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(56,189,248,0.1); padding: 3px 8px; border-radius: 5px; white-space: nowrap; }
+  .task .del { opacity: 0; background: none; border: none; cursor: pointer; color: var(--st-cancelled); padding: 4px; transition: opacity 0.15s; flex-shrink: 0; }
+  .task:hover .del { opacity: 0.55; } .task .del:hover { opacity: 1; }
+
+  /* STATUS PILL + DROPDOWN */
+  .status-wrap { position: relative; flex-shrink: 0; }
+  .status-pill {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px; padding: 5px 12px; border-radius: 7px;
+    cursor: pointer; border: 1px solid; display: flex; align-items: center; gap: 7px;
+    transition: all 0.15s; white-space: nowrap; min-width: 132px; justify-content: center;
+  }
+  .status-pill .sdot { width: 7px; height: 7px; border-radius: 50%; }
+  .status-pill:hover { filter: brightness(1.2); }
+  .status-menu {
+    position: absolute; top: calc(100% + 6px); right: 0; z-index: 50;
+    background: var(--surface-3); border: 1px solid var(--border-bright); border-radius: 10px;
+    padding: 6px; min-width: 170px; box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    display: none; animation: pop 0.15s ease;
+  }
+  .status-menu.open { display: block; }
+  @keyframes pop { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+  .status-opt { display: flex; align-items: center; gap: 9px; padding: 9px 11px; border-radius: 7px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 12px; transition: background 0.12s; }
+  .status-opt:hover { background: var(--surface-2); }
+  .status-opt .sdot { width: 8px; height: 8px; border-radius: 50%; }
+
+  .add-task { display: flex; gap: 10px; margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border); }
+  .add-task input { flex: 1; border: 1px solid var(--border); border-radius: 9px; padding: 10px 14px; font-family: 'Sora'; font-size: 14px; background: var(--surface-2); color: var(--text); }
+  .add-task input:focus { outline: none; border-color: var(--cyan); }
+  .add-task input::placeholder { color: var(--text-faint); }
+
+  .btn { background: var(--surface-3); color: var(--text); border: 1px solid var(--border); border-radius: 9px; padding: 10px 18px; font-family: 'Chakra Petch', sans-serif; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .btn:hover { border-color: var(--cyan); color: var(--cyan); }
+  .btn:active { transform: scale(0.98); }
+  .btn-cyan { background: linear-gradient(135deg, var(--cyan), var(--teal)); color: #051018; border: none; box-shadow: var(--glow); }
+  .btn-cyan:hover { filter: brightness(1.1); color: #051018; }
+  .add-sector { margin-top: 6px; }
+
+  /* WEEK FORM */
+  .week-form { padding: 24px; margin-bottom: 26px; }
+  .week-form h3 { font-family: 'Chakra Petch', sans-serif; font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 18px; }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; }
+  .field label { display: block; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-dim); margin-bottom: 6px; }
+  .field input, .field textarea { width: 100%; border: 1px solid var(--border); border-radius: 9px; padding: 10px 12px; font-family: 'Sora'; font-size: 14px; background: var(--surface-2); color: var(--text); }
+  .field input:focus, .field textarea:focus { outline: none; border-color: var(--cyan); }
+  .field.full { grid-column: 1 / -1; }
+  .field textarea { resize: vertical; min-height: 58px; }
+  .field input[type=week]::-webkit-calendar-picker-indicator { filter: invert(0.7); }
+
+  .week-log { overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: var(--surface-2); color: var(--text-dim); font-family: 'JetBrains Mono', monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 14px 16px; border-top: 1px solid var(--border); font-size: 13.5px; vertical-align: top; }
+  tr:hover td { background: var(--surface-2); }
+  td.mono { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+  .roi-tag { font-family: 'JetBrains Mono', monospace; font-weight: 600; padding: 3px 9px; border-radius: 6px; font-size: 12px; }
+  .roi-pos { background: rgba(52,211,153,0.13); color: var(--st-done); }
+  .roi-neg { background: rgba(244,104,95,0.13); color: var(--st-cancelled); }
+  .roi-neutral { background: rgba(251,191,36,0.13); color: var(--st-suspended); }
+  .empty { padding: 44px; text-align: center; color: var(--text-faint); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+
+  /* EVAL */
+  .eval-card { padding: 30px; margin-bottom: 22px; background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%); }
+  .eval-card .badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(56,189,248,0.12); color: var(--cyan); font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; padding: 6px 14px; border-radius: 20px; margin-bottom: 18px; border: 1px solid var(--border-bright); }
+  .eval-card h3 { font-family: 'Chakra Petch', sans-serif; font-size: 22px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .eval-card p.intro { color: var(--text-dim); font-size: 14px; margin-bottom: 22px; max-width: 640px; }
+  .eval-output { padding: 28px; min-height: 120px; }
+  .eval-output h4 { font-family: 'Chakra Petch', sans-serif; color: var(--cyan); font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; margin: 22px 0 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .eval-output h4:first-child { margin-top: 0; }
+  .eval-output p { font-size: 14px; margin-bottom: 12px; color: var(--text); }
+  .eval-output ul { margin: 0 0 14px 4px; list-style: none; }
+  .eval-output li { font-size: 14px; margin-bottom: 8px; padding-left: 20px; position: relative; }
+  .eval-output li::before { content: '▸'; position: absolute; left: 0; color: var(--cyan); }
+  .eval-output strong { color: var(--cyan); font-weight: 600; }
+  .spinner { display: inline-block; width: 18px; height: 18px; border: 2.5px solid rgba(56,189,248,0.25); border-top-color: var(--cyan); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-state { display: flex; align-items: center; gap: 12px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(120px); background: var(--surface-3); color: var(--text); border: 1px solid var(--border-bright); padding: 13px 24px; border-radius: 11px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 500; box-shadow: 0 8px 30px rgba(0,0,0,0.5); transition: transform 0.3s cubic-bezier(0.16,1,0.3,1); z-index: 1000; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 640px) {
+    .brand .sub { display: none; }
+    nav { gap: 0; } nav button { padding: 10px 11px; font-size: 12px; }
+    .view-head h2 { font-size: 24px; }
+    th, td { padding: 10px; font-size: 12px; }
+    .status-pill { min-width: auto; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="brand">
+      <div class="logo-mark"><svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+      <h1>Estratégia<span>OS</span></h1>
+      <span class="sub">// THAYNE OLIVEIRA · ADV PREVIDENCIÁRIA</span>
+    </div>
+    <nav>
+      <button class="nav-btn active" data-view="dashboard"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</button>
+      <button class="nav-btn" data-view="plano"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Plano por Setor</button>
+      <button class="nav-btn" data-view="registro"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg>Registro Semanal</button>
+      <button class="nav-btn" data-view="avaliacao"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Avaliação Claude</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="view active" id="dashboard">
+    <div class="view-head"><h2>Visão <span class="accent">geral</span></h2><p>Painel de controle das frentes estratégicas. Progresso, status das tarefas e retorno acumulado em tempo real.</p></div>
+    <div class="stat-grid" id="statGrid"></div>
+    <div class="panel status-board">
+      <h3><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Status das tarefas</h3>
+      <div class="status-cells" id="statusCells"></div>
+      <div class="stacked-bar" id="stackedBar"></div>
+    </div>
+    <div class="panel progress-board">
+      <h3><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Progresso por setor</h3>
+      <div id="sectorProgress"></div>
+    </div>
+  </section>
+
+  <section class="view" id="plano">
+    <div class="view-head"><h2>Plano por <span class="accent">setor</span></h2><p>Cada tarefa tem status: a fazer, em andamento, suspenso, cancelado ou concluído. Clique no status para alterar. Adicione novas tarefas ou setores conforme necessário.</p></div>
+    <div id="sectorList"></div>
+    <div class="add-sector"><button class="btn" onclick="addSector()">+ Adicionar novo setor</button></div>
+  </section>
+
+  <section class="view" id="registro">
+    <div class="view-head"><h2>Registro <span class="accent">semanal</span></h2><p>Anote o retorno de cada demanda executada. Esses dados alimentam o dashboard e a avaliação do Claude.</p></div>
+    <div class="panel week-form">
+      <h3>Nova entrada</h3>
+      <div class="form-grid">
+        <div class="field"><label>Semana</label><input type="week" id="wkWeek"></div>
+        <div class="field"><label>Demanda / Estratégia</label><input type="text" id="wkDemand" placeholder="Ex: Google Ads LOAS"></div>
+        <div class="field"><label>Investimento R$</label><input type="number" id="wkInvest" placeholder="0" min="0"></div>
+        <div class="field"><label>Leads gerados</label><input type="number" id="wkLeads" placeholder="0" min="0"></div>
+        <div class="field"><label>Contratos</label><input type="number" id="wkContracts" placeholder="0" min="0"></div>
+        <div class="field"><label>Retorno R$</label><input type="number" id="wkReturn" placeholder="0" min="0"></div>
+        <div class="field full"><label>Observações</label><textarea id="wkNotes" placeholder="O que funcionou, o que ajustar..."></textarea></div>
+      </div>
+      <div style="margin-top:18px;"><button class="btn btn-cyan" onclick="addWeekLog()">Salvar registro</button></div>
+    </div>
+    <div class="panel week-log">
+      <table><thead><tr><th>Semana</th><th>Demanda</th><th>Invest.</th><th>Leads</th><th>Contr.</th><th>Retorno</th><th>ROI</th><th></th></tr></thead><tbody id="weekLogBody"></tbody></table>
+      <div class="empty" id="weekEmpty">// nenhum registro ainda</div>
+    </div>
+  </section>
+
+  <section class="view" id="avaliacao">
+    <div class="view-head"><h2>Avaliação <span class="accent">Claude</span></h2><p>O Claude analisa o status do seu plano e os retornos registrados, devolvendo orientações práticas e sugestões de reestruturação.</p></div>
+    <div class="panel eval-card">
+      <div class="badge"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/></svg>Análise inteligente</div>
+      <h3>Solicitar diagnóstico</h3>
+      <p class="intro">O Claude lê todos os dados — status das tarefas por setor e retornos semanais — e gera um diagnóstico atualizado com recomendações específicas baseadas nos seus números reais.</p>
+      <button class="btn btn-cyan" onclick="runEvaluation()">▸ Gerar avaliação agora</button>
+    </div>
+    <div class="panel eval-output" id="evalOutput"><p style="color:var(--text-faint);font-family:'JetBrains Mono',monospace;font-size:13px;">// aguardando solicitação de análise...</p></div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STATUSES = {
+  todo:      { label: 'A fazer',      color: '#64748b' },
+  progress:  { label: 'Em andamento', color: '#38bdf8' },
+  suspended: { label: 'Suspenso',     color: '#fbbf24' },
+  cancelled: { label: 'Cancelado',    color: '#f4685f' },
+  done:      { label: 'Concluído',    color: '#34d399' },
+};
+
+const DEFAULT_SECTORS = [
+  { id:'g1', name:'Gargalo 1 — Delegação', desc:'Sair de 14 para 5 etapas', color:'#f4685f', icon:'users', tasks:[
+    {id:'t1', text:'Criar script de fechamento para Letícia comercial', when:'Sem 1', status:'todo'},
+    {id:'t2', text:'Criar proposta comercial padronizada por serviço', when:'Sem 1', status:'todo'},
+    {id:'t3', text:'Treinar Letícia comercial: ela assiste suas reuniões', when:'Sem 1', status:'todo'},
+    {id:'t4', text:'Criar checklist de 15 pontos para revisão de contratos (Eliane)', when:'Sem 2', status:'todo'},
+    {id:'t5', text:'Letícia comercial faz reuniões supervisionadas', when:'Sem 2', status:'todo'},
+    {id:'t6', text:'Eliane assume revisão de todos os contratos', when:'Sem 2', status:'todo'},
+    {id:'t7', text:'Letícia comercial faz reuniões sozinha', when:'Sem 3', status:'todo'},
+    {id:'t8', text:'Definir spot-check semanal de 20% nas peças da Eliane', when:'Sem 3', status:'todo'},
+  ]},
+  { id:'g2', name:'Gargalo 2 — Planejamento', desc:'Recuperar volume (caiu 67%)', color:'#38bdf8', icon:'trending', tasks:[
+    {id:'t1', text:'Configurar campanha Meta segmentada (médicos, empresários, CLT +50)', when:'Sem 3', status:'todo'},
+    {id:'t2', text:'Criar carrossel comparativo "quanto você perde sem planejamento"', when:'Sem 3', status:'todo'},
+    {id:'t3', text:'Agendar palestra para grupo de empresários', when:'Sem 2', status:'todo'},
+    {id:'t4', text:'Criar lead magnet: guia de erros na aposentadoria', when:'Sem 3', status:'todo'},
+  ]},
+  { id:'g3', name:'Gargalo 3 — Conteúdo', desc:'Gerar desejo e urgência', color:'#fbbf24', icon:'edit', tasks:[
+    {id:'t1', text:'Parar de produzir conteúdo informativo', when:'Sem 1', status:'todo'},
+    {id:'t2', text:'Criar 3 posts provocativos (número que assusta, comparação, caso real)', when:'Sem 1', status:'todo'},
+    {id:'t3', text:'Reescrever bio dos 2 Instagrams com CTA de urgência', when:'Sem 1', status:'todo'},
+    {id:'t4', text:'Estabelecer rotina: 3 posts/semana no perfil pessoal', when:'Sem 5', status:'todo'},
+    {id:'t5', text:'Repostar melhor conteúdo no perfil do escritório', when:'Sem 5', status:'todo'},
+  ]},
+  { id:'g4', name:'Gargalo 4 — Comercial', desc:'Letícia além do follow-up', color:'#34d399', icon:'phone', tasks:[
+    {id:'t1', text:'Ajustar ajuda de custo para R$ 1.000 + R$ 100/contrato', when:'Sem 1', status:'todo'},
+    {id:'t2', text:'Definir meta de conversão acima de 25%', when:'Sem 2', status:'todo'},
+    {id:'t3', text:'Implementar relatório semanal no Slack', when:'Sem 2', status:'todo'},
+    {id:'t4', text:'Revisar taxa de fechamento após 10 reuniões', when:'Sem 4', status:'todo'},
+  ]},
+  { id:'g5', name:'Gargalo 5 — YouTube', desc:'Retomar canal parado há 3 anos', color:'#f4685f', icon:'video', tasks:[
+    {id:'t1', text:'Gravar 1º vídeo: "3 erros que custam R$ 100k na aposentadoria"', when:'Sem 3', status:'todo'},
+    {id:'t2', text:'Otimizar título, descrição e tags para SEO', when:'Sem 3', status:'todo'},
+    {id:'t3', text:'Estabelecer rotina de 1 vídeo/semana', when:'Sem 5', status:'todo'},
+    {id:'t4', text:'Atingir 12 vídeos publicados', when:'Sem 12', status:'todo'},
+  ]},
+  { id:'mkt', name:'Marketing & Tráfego Pago', desc:'R$ 2.700/mês + palestras', color:'#38bdf8', icon:'megaphone', tasks:[
+    {id:'t1', text:'Otimizar Google Meu Negócio (trabalhista, LOAS, BPC, fotos)', when:'Sem 1', status:'todo'},
+    {id:'t2', text:'Pedir 5 avaliações no Google a clientes satisfeitos', when:'Sem 1', status:'todo'},
+    {id:'t3', text:'Prospectar 5 instituições para palestra', when:'Sem 2', status:'todo'},
+    {id:'t4', text:'Ligar Google Ads LOAS (R$ 500)', when:'Sem 3', status:'todo'},
+    {id:'t5', text:'Ligar Google Ads Incapacidade (R$ 500)', when:'Sem 3', status:'todo'},
+    {id:'t6', text:'Ligar Google Ads Trabalhista genérico (R$ 500)', when:'Sem 3', status:'todo'},
+    {id:'t7', text:'Ligar Meta Ads Planejamento (R$ 500)', when:'Sem 3', status:'todo'},
+    {id:'t8', text:'Ligar Meta Ads conversão geral (R$ 500)', when:'Sem 3', status:'todo'},
+    {id:'t9', text:'Impulsionar 2 melhores Reels (R$ 200)', when:'Sem 3', status:'todo'},
+    {id:'t10', text:'Escalar palestras para 6-8/mês se gerarem leads', when:'Sem 5', status:'todo'},
+    {id:'t11', text:'Afunilar Google Trabalhista por setor que mais converteu', when:'Sem 8', status:'todo'},
+  ]},
+  { id:'auto', name:'Automações (N8N + Claude)', desc:'GERID, tarefas, NPS', color:'#fbbf24', icon:'cpu', tasks:[
+    {id:'t1', text:'Template de tarefas automático no Tecnojuris', when:'Sem 5', status:'todo'},
+    {id:'t2', text:'Alerta de assinatura pendente (48h)', when:'Sem 5', status:'todo'},
+    {id:'t3', text:'Notificação Slack de eventos', when:'Sem 5', status:'todo'},
+    {id:'t4', text:'Relatório semanal automático', when:'Sem 6', status:'todo'},
+    {id:'t5', text:'NPS automático 30 dias após entrega + pedir indicação', when:'Sem 6', status:'todo'},
+    {id:'t6', text:'Automação GERID: acessa semanal, confere andamentos, anota Tecnojuris, cria tarefa Letícia estag.', when:'Sem 9', status:'todo'},
+    {id:'t7', text:'Claude analisa decisões e redige anotação no Tecnojuris', when:'Sem 10', status:'todo'},
+  ]},
+];
+
+const ICONS = {
+  users:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>',
+  trending:'<path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/>',
+  edit:'<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>',
+  phone:'<path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>',
+  video:'<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>',
+  megaphone:'<path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 11-5.8-1.6"/>',
+  cpu:'<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/>',
+  generic:'<circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>',
+};
+const SECTOR_COLORS = ['#f4685f','#38bdf8','#fbbf24','#34d399','#a78bfa','#2dd4bf'];
+
+let sectors = [], weekLogs = [];
+
+async function loadData() {
+  try { const s = await window.storage.get('sectors_v2'); sectors = s ? JSON.parse(s.value) : JSON.parse(JSON.stringify(DEFAULT_SECTORS)); }
+  catch { sectors = JSON.parse(JSON.stringify(DEFAULT_SECTORS)); }
+  // migração: garante status em toda tarefa
+  sectors.forEach(s => s.tasks.forEach(t => { if(!t.status) t.status = t.done ? 'done' : 'todo'; }));
+  try { const w = await window.storage.get('weekLogs'); weekLogs = w ? JSON.parse(w.value) : []; }
+  catch { weekLogs = []; }
+  renderAll();
+}
+async function saveSectors() { try { await window.storage.set('sectors_v2', JSON.stringify(sectors)); } catch(e){console.error(e);} }
+async function saveWeekLogs() { try { await window.storage.set('weekLogs', JSON.stringify(weekLogs)); } catch(e){console.error(e);} }
+
+document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => {
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  btn.classList.add('active'); document.getElementById(btn.dataset.view).classList.add('active');
+  if (btn.dataset.view === 'dashboard') renderDashboard();
+}));
+
+function renderAll() { renderDashboard(); renderSectors(); renderWeekLogs(); }
+
+function countStatuses() {
+  const c = { todo:0, progress:0, suspended:0, cancelled:0, done:0, total:0 };
+  sectors.forEach(s => s.tasks.forEach(t => { c[t.status]=(c[t.status]||0)+1; c.total++; }));
+  return c;
+}
+
+function renderDashboard() {
+  const c = countStatuses();
+  const active = c.total - c.cancelled;
+  const totalInvest = weekLogs.reduce((a,w)=>a+(+w.invest||0),0);
+  const totalReturn = weekLogs.reduce((a,w)=>a+(+w.ret||0),0);
+  const totalLeads = weekLogs.reduce((a,w)=>a+(+w.leads||0),0);
+  const totalContracts = weekLogs.reduce((a,w)=>a+(+w.contracts||0),0);
+  const roi = totalInvest>0 ? Math.round(((totalReturn-totalInvest)/totalInvest)*100) : 0;
+
+  document.getElementById('statGrid').innerHTML = `
+    <div class="stat cyan"><div class="ico"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div><div class="label">Concluído</div><div class="value">${c.done}<small>/${active}</small></div><div class="meta">${active?Math.round(c.done/active*100):0}% do plano ativo</div></div>
+    <div class="stat green"><div class="ico"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div class="label">Retorno acumul.</div><div class="value" style="font-size:28px;">R$ ${totalReturn.toLocaleString('pt-BR')}</div><div class="meta">${weekLogs.length} registros</div></div>
+    <div class="stat cyan"><div class="ico"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="label">Leads gerados</div><div class="value">${totalLeads}</div><div class="meta">${totalContracts} contratos</div></div>
+    <div class="stat ${roi>=0?'green':'amber'}"><div class="ico"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg></div><div class="label">ROI acumul.</div><div class="value" style="font-size:30px;">${roi>=0?'+':''}${roi}%</div><div class="meta">inv R$ ${totalInvest.toLocaleString('pt-BR')}</div></div>`;
+
+  document.getElementById('statusCells').innerHTML = ['todo','progress','suspended','cancelled','done'].map(k => `
+    <div class="scell"><div class="ledge" style="background:${STATUSES[k].color};box-shadow:0 0 10px ${STATUSES[k].color}"></div>
+    <div class="num" style="color:${STATUSES[k].color}">${c[k]}</div><div class="nm">${STATUSES[k].label}</div></div>`).join('');
+
+  const bar = document.getElementById('stackedBar');
+  bar.innerHTML = ['done','progress','suspended','todo','cancelled'].map(k => {
+    const pct = c.total ? (c[k]/c.total*100) : 0;
+    return pct>0 ? `<span style="width:${pct}%;background:${STATUSES[k].color}" title="${STATUSES[k].label}: ${c[k]}"></span>` : '';
+  }).join('');
+
+  document.getElementById('sectorProgress').innerHTML = sectors.map(s => {
+    const done = s.tasks.filter(t=>t.status==='done').length;
+    const act = s.tasks.filter(t=>t.status!=='cancelled').length;
+    const pct = act ? Math.round(done/act*100) : 0;
+    return `<div class="sector-prog"><div class="top"><span class="name"><span class="dot" style="background:${s.color};color:${s.color}"></span>${s.name}</span><span class="pct">${done}/${act} · ${pct}%</span></div><div class="bar"><div class="fill" style="width:${pct}%;background:${s.color}"></div></div></div>`;
+  }).join('');
+}
+
+function renderSectors() {
+  document.getElementById('sectorList').innerHTML = sectors.map((s,si) => {
+    const done = s.tasks.filter(t=>t.status==='done').length;
+    const icon = ICONS[s.icon]||ICONS.generic;
+    return `<div class="sector ${si===0?'open':''}" id="sec-${s.id}">
+      <div class="sector-header" onclick="toggleSector('${s.id}')">
+        <div class="sector-icon" style="background:${s.color}1a;color:${s.color};border-color:${s.color}40"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">${icon}</svg></div>
+        <div class="sector-title"><div class="t">${s.name}</div><div class="d">${s.desc||''}</div></div>
+        <span class="sector-count">${done}/${s.tasks.length}</span>
+        <svg class="sector-chevron" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+      <div class="sector-body"><div class="sector-body-inner">
+        ${s.tasks.map(t => {
+          const st = STATUSES[t.status]||STATUSES.todo;
+          const txtClass = t.status==='cancelled'?'cancelled':(t.status==='done'?'done':'');
+          return `<div class="task">
+            <div class="txt ${txtClass}">${t.text}</div>
+            ${t.when?`<span class="when">${t.when}</span>`:''}
+            <div class="status-wrap">
+              <div class="status-pill" style="color:${st.color};border-color:${st.color}55;background:${st.color}14" onclick="toggleMenu(event,'${s.id}','${t.id}')">
+                <span class="sdot" style="background:${st.color};box-shadow:0 0 6px ${st.color}"></span>${st.label}
+              </div>
+              <div class="status-menu" id="menu-${s.id}-${t.id}">
+                ${Object.entries(STATUSES).map(([k,v])=>`<div class="status-opt" onclick="setStatus('${s.id}','${t.id}','${k}')"><span class="sdot" style="background:${v.color}"></span>${v.label}</div>`).join('')}
+              </div>
+            </div>
+            <button class="del" onclick="delTask('${s.id}','${t.id}')"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
+          </div>`;
+        }).join('')}
+        <div class="add-task"><input type="text" id="newtask-${s.id}" placeholder="Adicionar nova tarefa..." onkeydown="if(event.key==='Enter')addTask('${s.id}')"><button class="btn" onclick="addTask('${s.id}')">Adicionar</button></div>
+      </div></div></div>`;
+  }).join('');
+}
+
+function renderWeekLogs() {
+  const body = document.getElementById('weekLogBody'), empty = document.getElementById('weekEmpty');
+  if (!weekLogs.length) { body.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  const sorted = [...weekLogs].sort((a,b)=>(b.week||'').localeCompare(a.week||''));
+  body.innerHTML = sorted.map(w => {
+    const inv=+w.invest||0, ret=+w.ret||0; let roiTag, roiClass;
+    if(inv===0&&ret>0){roiTag='∞';roiClass='roi-pos';}
+    else if(inv===0){roiTag='—';roiClass='roi-neutral';}
+    else {const r=Math.round(((ret-inv)/inv)*100);roiTag=(r>=0?'+':'')+r+'%';roiClass=r>=0?'roi-pos':'roi-neg';}
+    return `<tr><td class="mono">${formatWeek(w.week)}</td><td><strong>${w.demand||'—'}</strong>${w.notes?`<br><span style="font-size:11.5px;color:var(--text-faint);">${w.notes}</span>`:''}</td><td class="mono">R$ ${inv.toLocaleString('pt-BR')}</td><td class="mono">${w.leads||0}</td><td class="mono">${w.contracts||0}</td><td class="mono">R$ ${ret.toLocaleString('pt-BR')}</td><td><span class="roi-tag ${roiClass}">${roiTag}</span></td><td><button class="del" style="opacity:0.5" onclick="delWeekLog('${w.id}')"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg></button></td></tr>`;
+  }).join('');
+}
+function formatWeek(w){ if(!w)return'—'; const[y,wk]=w.split('-W'); return`S${wk}/${y.slice(2)}`; }
+
+function toggleSector(id){ document.getElementById('sec-'+id).classList.toggle('open'); }
+function toggleMenu(e,sid,tid){ e.stopPropagation(); const m=document.getElementById('menu-'+sid+'-'+tid); document.querySelectorAll('.status-menu').forEach(x=>{if(x!==m)x.classList.remove('open');}); m.classList.toggle('open'); }
+document.addEventListener('click', ()=>document.querySelectorAll('.status-menu').forEach(m=>m.classList.remove('open')));
+
+function setStatus(sid,tid,status){
+  const s=sectors.find(x=>x.id===sid), t=s.tasks.find(x=>x.id===tid);
+  t.status=status; delete t.done; saveSectors(); renderSectors();
+  document.getElementById('sec-'+sid).classList.add('open'); renderDashboard();
+}
+function delTask(sid,tid){ const s=sectors.find(x=>x.id===sid); s.tasks=s.tasks.filter(x=>x.id!==tid); saveSectors(); renderSectors(); document.getElementById('sec-'+sid).classList.add('open'); renderDashboard(); }
+function addTask(sid){ const inp=document.getElementById('newtask-'+sid); const text=inp.value.trim(); if(!text)return; const s=sectors.find(x=>x.id===sid); s.tasks.push({id:'t'+Date.now(),text,when:'',status:'todo'}); saveSectors(); renderSectors(); document.getElementById('sec-'+sid).classList.add('open'); renderDashboard(); toast('Tarefa adicionada'); }
+function addSector(){ const name=prompt('Nome do novo setor:'); if(!name)return; const desc=prompt('Descrição curta (opcional):')||''; const color=SECTOR_COLORS[sectors.length%SECTOR_COLORS.length]; sectors.push({id:'s'+Date.now(),name,desc,color,icon:'generic',tasks:[]}); saveSectors(); renderSectors(); renderDashboard(); toast('Setor criado'); }
+
+function addWeekLog(){
+  const week=document.getElementById('wkWeek').value, demand=document.getElementById('wkDemand').value.trim();
+  if(!demand){toast('Informe a demanda');return;}
+  weekLogs.push({id:'w'+Date.now(),week,demand,invest:document.getElementById('wkInvest').value,leads:document.getElementById('wkLeads').value,contracts:document.getElementById('wkContracts').value,ret:document.getElementById('wkReturn').value,notes:document.getElementById('wkNotes').value.trim()});
+  saveWeekLogs(); renderWeekLogs(); renderDashboard();
+  ['wkDemand','wkInvest','wkLeads','wkContracts','wkReturn','wkNotes'].forEach(i=>document.getElementById(i).value='');
+  toast('Registro salvo');
+}
+function delWeekLog(id){ weekLogs=weekLogs.filter(w=>w.id!==id); saveWeekLogs(); renderWeekLogs(); renderDashboard(); }
+
+function toast(msg){ const t=document.getElementById('toast'); t.textContent='// '+msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
+
+async function runEvaluation(){
+  const out=document.getElementById('evalOutput');
+  out.innerHTML='<div class="loading-state"><span class="spinner"></span> Claude analisando dados...</div>';
+  const c=countStatuses();
+  const sectorSummary=sectors.map(s=>{
+    const by={todo:0,progress:0,suspended:0,cancelled:0,done:0}; s.tasks.forEach(t=>by[t.status]++);
+    const pend=s.tasks.filter(t=>t.status==='todo'||t.status==='progress').map(t=>t.text);
+    return `${s.name}: ${by.done} concluídas, ${by.progress} em andamento, ${by.suspended} suspensas, ${by.cancelled} canceladas, ${by.todo} a fazer. Foco atual: ${pend.length?pend.slice(0,3).join('; '):'nenhuma pendente'}`;
+  }).join('\n');
+  const logSummary=weekLogs.length?weekLogs.map(w=>{const inv=+w.invest||0,ret=+w.ret||0;const roi=inv>0?Math.round(((ret-inv)/inv)*100)+'%':'sem invest';return `${formatWeek(w.week)} | ${w.demand} | inv R$${inv} | ${w.leads||0} leads | ${w.contracts||0} contratos | retorno R$${ret} | ROI ${roi}${w.notes?' | '+w.notes:''}`;}).join('\n'):'Nenhum registro semanal ainda.';
+
+  const prompt=`Você é consultor de negócios de um escritório de advocacia previdenciária 100% digital (sócia Thayne Oliveira, 4 pessoas, custo fixo R$22k/mês, meta de faturamento previsível R$50k em 14-16 meses). Os 5 gargalos: você é o funil, planejamento caiu 67%, conteúdo morto, comercial subaproveitado, YouTube abandonado. Estratégia: R$2.700/mês tráfego pago, palestras gratuitas, delegação à equipe.
+
+DADOS ATUAIS:
+
+STATUS DO PLANO (${c.done} concluídas, ${c.progress} em andamento, ${c.suspended} suspensas, ${c.cancelled} canceladas, ${c.todo} a fazer, de ${c.total} tarefas):
+${sectorSummary}
+
+RETORNOS SEMANAIS:
+${logSummary}
+
+Faça avaliação estratégica em português do Brasil, direta e prática. Use exatamente estes títulos markdown (##):
+## Onde você está
+## O que está funcionando
+## O que precisa de atenção
+## Recomendação de reestruturação
+## Próximo foco
+
+Seja específico com os números reais. Comente tarefas suspensas/canceladas se houver. Se houver poucos dados, oriente o que registrar/priorizar. Máximo 450 palavras. Nada genérico.`;
+
+  try{
+    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1300,messages:[{role:"user",content:prompt}]})});
+    const data=await r.json();
+    const text=data.content.filter(b=>b.type==='text').map(b=>b.text).join('\n');
+    out.innerHTML=mdToHtml(text);
+  }catch(err){ out.innerHTML='<p style="color:var(--st-cancelled);">// Erro ao gerar avaliação. Verifique a conexão e tente novamente.</p>'; console.error(err); }
+}
+function mdToHtml(md){
+  const lines=md.split('\n'); let html='',inList=false;
+  for(let line of lines){ line=line.trim(); if(!line){if(inList){html+='</ul>';inList=false;}continue;}
+    line=line.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+    if(line.startsWith('## ')){if(inList){html+='</ul>';inList=false;}html+='<h4>'+line.slice(3)+'</h4>';}
+    else if(line.startsWith('- ')||line.startsWith('* ')){if(!inList){html+='<ul>';inList=true;}html+='<li>'+line.slice(2)+'</li>';}
+    else {if(inList){html+='</ul>';inList=false;}html+='<p>'+line+'</p>';}
+  } if(inList)html+='</ul>'; return html;
+}
+
+document.getElementById('wkWeek').value=(()=>{const d=new Date(),o=new Date(d.getFullYear(),0,1);const wk=Math.ceil((((d-o)/86400000)+o.getDay()+1)/7);return d.getFullYear()+'-W'+String(wk).padStart(2,'0');})();
+loadData();
+</script>
+</body>
+</html>
